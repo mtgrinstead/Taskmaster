@@ -1,9 +1,14 @@
-package users
+package Handlers
 
 import (
+	"database/sql"
 	"errors"
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/libsql/libsql-client-go/libsql"
+
 	"net/http"
+	"os"
 )
 
 type user struct {
@@ -13,6 +18,37 @@ type user struct {
 	CreatedDate  string `json:"createdDate"`
 	PasswordHash string `json:"password"`
 	Role         int    `json:"role"`
+}
+
+func CheckMe(c *gin.Context) {
+	var db libsql.DB
+
+	var dbUrl = "libsql://taskmaster-mtgrinstead.turso.io?authToken=eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJpYXQiOiIyMDIzLTEwLTAyVDA1OjMwOjQxLjk3ODY1NjE1OVoiLCJpZCI6IjhhMzIzMDE4LTVkYWUtMTFlZS04YjVjLTMyNzE3OTI2MDEzYSJ9.cUDuRNAWL21Zf1kT0StQYCuP4FT0JQYaHYr8aCiCV9c-ghzTcvXJVxOoqoNY5HViAFEm7uPLF1N6jJ2YreCvBg"
+	db, err := libsql.Open("libsql", dbUrl)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "failed to open db %s: %s", dbUrl, err)
+		os.Exit(1)
+	}
+	fmt.Println(db)
+
+	var userdb user
+	userID := "4"
+
+	query := "SELECT ID, Name FROM users WHERE id = ?"
+
+	err = db.QueryRow(query, userID).Scan(&userdb.ID, &userdb.Name)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			fmt.Println("No rows found.")
+		} else {
+			fmt.Println("Error:", err)
+			return
+		}
+	}
+
+	fmt.Printf("User ID: %d\nUser Name: %s\n", userdb.ID, userdb.Name)
+
 }
 
 var users = []user{
