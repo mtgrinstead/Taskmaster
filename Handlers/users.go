@@ -5,8 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/libsql/libsql-client-go/libsql"
-
+	_ "github.com/libsql/libsql-client-go/libsql"
 	"net/http"
 	"os"
 )
@@ -21,10 +20,9 @@ type user struct {
 }
 
 func CheckMe(c *gin.Context) {
-	var db libsql.DB
 
 	var dbUrl = "libsql://taskmaster-mtgrinstead.turso.io?authToken=eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJpYXQiOiIyMDIzLTEwLTAyVDA1OjMwOjQxLjk3ODY1NjE1OVoiLCJpZCI6IjhhMzIzMDE4LTVkYWUtMTFlZS04YjVjLTMyNzE3OTI2MDEzYSJ9.cUDuRNAWL21Zf1kT0StQYCuP4FT0JQYaHYr8aCiCV9c-ghzTcvXJVxOoqoNY5HViAFEm7uPLF1N6jJ2YreCvBg"
-	db, err := libsql.Open("libsql", dbUrl)
+	db, err := sql.Open("libsql", dbUrl)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to open db %s: %s", dbUrl, err)
 		os.Exit(1)
@@ -32,7 +30,7 @@ func CheckMe(c *gin.Context) {
 	fmt.Println(db)
 
 	var userdb user
-	userID := "4"
+	userID := 1
 
 	query := "SELECT ID, Name FROM users WHERE id = ?"
 
