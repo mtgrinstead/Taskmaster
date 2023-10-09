@@ -44,5 +44,3 @@ require (
 	nhooyr.io/websocket v1.8.7 // indirect
 
 )
-
-replace /Users/grinchy/ProjectManagerProg/main => ./users

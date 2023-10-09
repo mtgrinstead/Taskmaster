@@ -2,8 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	"gihub.com/mtgrinstead/Taskmaster/netlify/functions/deploy-succeeded/Handling"
 	"github.com/gin-gonic/gin"
-	"main/Handlers"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -41,20 +41,20 @@ func main() {
 	lambda.Start(handler)
 
 	router := gin.Default()
-	router.GET("/getme", Handlers.CheckMe)
-	router.GET("/tasks", Handlers.GetTasks)
-	router.GET("/tasks/:id", Handlers.TaskById)
-	router.POST("/tasks", Handlers.CreateTask)
-	router.PATCH("/in-progress", Handlers.UpdateStatusInProgress)
-	router.PATCH("/testing", Handlers.UpdateStatusTesting)
-	router.PATCH("/completed", Handlers.UpdateStatusCompleted)
+	router.GET("/getme", Handling.CheckMe)
+	router.GET("/tasks", Handling.GetTasks)
+	router.GET("/tasks/:id", Handling.TaskById)
+	router.POST("/tasks", Handling.CreateTask)
+	router.PATCH("/in-progress", Handling.UpdateStatusInProgress)
+	router.PATCH("/testing", Handling.UpdateStatusTesting)
+	router.PATCH("/completed", Handling.UpdateStatusCompleted)
 
-	router.GET("/users", Handlers.GetUsers)
-	router.GET("/users/:id", Handlers.UserById)
-	router.POST("/users", Handlers.CreateUser)
-	router.PATCH("/password", Handlers.UpdatePassword)
-	router.PATCH("/promote", Handlers.PromoteRole)
-	router.PATCH("/demote", Handlers.DemoteRole)
+	router.GET("/users", Handling.GetUsers)
+	router.GET("/users/:id", Handling.UserById)
+	router.POST("/users", Handling.CreateUser)
+	router.PATCH("/password", Handling.UpdatePassword)
+	router.PATCH("/promote", Handling.PromoteRole)
+	router.PATCH("/demote", Handling.DemoteRole)
 	router.Run("localhost:8080")
 
 }
