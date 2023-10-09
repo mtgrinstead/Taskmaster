@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "netlify-lambda": "^2.0.16",
+    "start-api": "netlify-lambda serve functions"
+  }
+}
