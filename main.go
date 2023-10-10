@@ -1,45 +1,43 @@
 package main
 
 import (
-	"encoding/json"
-	"github.com/aws/aws-lambda-go/events"
-	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/gin-gonic/gin"
 	"main/Handling"
 )
 
-type RequestBody struct {
-	Payload Payload `json:"payload"`
-}
-
-type Payload struct {
-	Context string `json:"context"`
-}
-
-func handler(request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResponse, error) {
-
-	requestBody := RequestBody{}
-	err := json.Unmarshal([]byte(request.Body), &requestBody)
-	if err != nil {
-		return nil, err
-	}
-
-	//if requestBody.Payload.Context == "production" {
-	//	mediumautopost.Do("")
-	//} else {
-	//	fmt.Println("context" + requestBody.Payload.Context + " detected, skipping")
-	//}
-
-	return &events.APIGatewayProxyResponse{
-		StatusCode: 200,
-		Body:       "Success",
-	}, nil
-}
+//type RequestBody struct {
+//	Payload Payload `json:"payload"`
+//}
+//
+//type Payload struct {
+//	Context string `json:"context"`
+//}
+//
+//func handler(request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResponse, error) {
+//
+//	requestBody := RequestBody{}
+//	err := json.Unmarshal([]byte(request.Body), &requestBody)
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	//if requestBody.Payload.Context == "production" {
+//	//	mediumautopost.Do("")
+//	//} else {
+//	//	fmt.Println("context" + requestBody.Payload.Context + " detected, skipping")
+//	//}
+//
+//	return &events.APIGatewayProxyResponse{
+//		StatusCode: 200,
+//		Body:       "Success",
+//	}, nil
+//}
 
 func main() {
-	lambda.Start(handler)
+	//lambda.Start(handler)
 
 	router := gin.Default()
+
 	router.GET("/getme", Handling.CheckMe)
 	router.GET("/tasks", Handling.GetTasks)
 	router.GET("/tasks/:id", Handling.TaskById)
