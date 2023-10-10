@@ -1,8 +1,8 @@
 [build]
-command = "go build -o main"
-functions = "netlify/functions"
-publish = "public"
-
+    command = "go build -o main"
+    functions = "netlify/functions"
+    publish = "public"
 
 [functions]
-main = "cmd/main.main"
+    [functions.main]
+        handler = "cmd/main.main"
