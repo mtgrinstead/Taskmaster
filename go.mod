@@ -1,5 +1,5 @@
-//module main
-module gihub.com/mtgrinstead/Taskmaster/netlify/functions/deploy-succeeded
+module main
+
 
 go 1.21
 

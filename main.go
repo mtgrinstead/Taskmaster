@@ -2,11 +2,10 @@ package main
 
 import (
 	"encoding/json"
-	"gihub.com/mtgrinstead/Taskmaster/netlify/functions/deploy-succeeded/Handling"
-	"github.com/gin-gonic/gin"
-
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/gin-gonic/gin"
+	"main/Handling"
 )
 
 type RequestBody struct {
