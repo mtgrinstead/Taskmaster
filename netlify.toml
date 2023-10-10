@@ -2,3 +2,7 @@
 command = "go build -o main"
 functions = "netlify/functions"
 publish = "public"
+
+
+[functions]
+main = "cmd/main.main"
