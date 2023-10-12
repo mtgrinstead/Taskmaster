@@ -5,7 +5,7 @@ go 1.21
 toolchain go1.21.1
 
 require (
-	github.com/aws/aws-lambda-go v1.41.0
+	//github.com/aws/aws-lambda-go v1.41.0
 	github.com/gin-gonic/gin v1.9.1
 	github.com/libsql/libsql-client-go v0.0.0-20230917132930-48c310b27e7b
 )

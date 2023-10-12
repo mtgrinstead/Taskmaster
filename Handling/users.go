@@ -3,11 +3,9 @@ package Handling
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	_ "github.com/libsql/libsql-client-go/libsql"
 	"net/http"
-	"os"
 )
 
 type user struct {
@@ -19,35 +17,80 @@ type user struct {
 	Role         int    `json:"role"`
 }
 
-func CheckMe(c *gin.Context) {
-
+func GetAllUsers(c *gin.Context) {
 	var dbUrl = "libsql://taskmaster-mtgrinstead.turso.io?authToken=eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJpYXQiOiIyMDIzLTEwLTAyVDA1OjMwOjQxLjk3ODY1NjE1OVoiLCJpZCI6IjhhMzIzMDE4LTVkYWUtMTFlZS04YjVjLTMyNzE3OTI2MDEzYSJ9.cUDuRNAWL21Zf1kT0StQYCuP4FT0JQYaHYr8aCiCV9c-ghzTcvXJVxOoqoNY5HViAFEm7uPLF1N6jJ2YreCvBg"
 	db, err := sql.Open("libsql", dbUrl)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to open db %s: %s", dbUrl, err)
-		os.Exit(1)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
-	fmt.Println(db)
-
-	var userdb user
-	userID := 1
-
-	query := "SELECT ID, Name FROM users WHERE id = ?"
-
-	err = db.QueryRow(query, userID).Scan(&userdb.ID, &userdb.Name)
-
+	query := "SELECT ID, Name, Email, CreatedDate, Role FROM users"
+	rows, err := db.Query(query)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			fmt.Println("No rows found.")
-		} else {
-			fmt.Println("Error:", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	defer rows.Close()
+
+	var users []user
+	for rows.Next() {
+		var userdb user
+		err := rows.Scan(&userdb.ID, &userdb.Name, &userdb.Email, &userdb.CreatedDate, &userdb.Role)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
+
+		//userID_int, err := strconv.Atoi(userdb.ID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		users = append(users, userdb)
+	}
+	if err := rows.Err(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 
-	fmt.Printf("User ID: %d\nUser Name: %s\n", userdb.ID, userdb.Name)
-
+	c.JSON(http.StatusOK, users)
 }
+
+//func CheckMe(c *gin.Context) {
+//
+//	var dbUrl = "libsql://taskmaster-mtgrinstead.turso.io?authToken=eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJpYXQiOiIyMDIzLTEwLTAyVDA1OjMwOjQxLjk3ODY1NjE1OVoiLCJpZCI6IjhhMzIzMDE4LTVkYWUtMTFlZS04YjVjLTMyNzE3OTI2MDEzYSJ9.cUDuRNAWL21Zf1kT0StQYCuP4FT0JQYaHYr8aCiCV9c-ghzTcvXJVxOoqoNY5HViAFEm7uPLF1N6jJ2YreCvBg"
+//	db, err := sql.Open("libsql", dbUrl)
+//	if err != nil {
+//		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+//		return
+//	}
+//
+//	var userdb user
+//
+//	query := "SELECT ID, Name FROM users"
+//
+//	err = db.QueryRow(query, userID).Scan(&userdb.ID, &userdb.Name)
+//
+//	if err != nil {
+//		if errors.Is(err, sql.ErrNoRows) {
+//			c.JSON(http.StatusNotFound, gin.H{"message": "No rows found."})
+//		} else {
+//			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+//		}
+//		return
+//	}
+//
+//	userID_int, err := strconv.Atoi(userdb.ID)
+//	if err != nil {
+//		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+//		return
+//	}
+//
+//	c.JSON(http.StatusOK, gin.H{
+//		"User ID":   userID_int,
+//		"User Name": userdb.Name,
+//	})
+//}
 
 var users = []user{
 	{ID: "1", Name: "Mom", Email: "momma@yahoo.com", CreatedDate: "Today", PasswordHash: "password", Role: 0},

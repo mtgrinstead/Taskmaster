@@ -11,7 +11,7 @@ type Response struct {
 
 func Handler(w http.ResponseWriter, r *http.Request) {
 	response := Response{
-		Message: "This is what will be returned!",
+		Message: "Successful!",
 	}
 
 	w.Header().Set("Content-Type", "application/json")
