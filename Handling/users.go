@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	_ "github.com/libsql/libsql-client-go/libsql"
 	"net/http"
+	"strconv"
 )
 
 type user struct {
@@ -114,6 +115,55 @@ func AddUser(c *gin.Context) {
 
 	// Return a success message to the user.
 	c.IndentedJSON(http.StatusCreated, gin.H{"message": "User added successfully"})
+}
+
+func DeleteUser(c *gin.Context) {
+	// Read the user ID from the URL parameter.
+	userID := c.Param("id")
+	id, err := strconv.Atoi(userID)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Invalid User ID"})
+		return
+	}
+
+	// Validate the user's id.
+	if id <= 0 {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "User ID must not be empty"})
+		return
+	}
+
+	// Create a prepared statement.
+	var dbUrl = "libsql://taskmaster-mtgrinstead.turso.io?authToken=eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJpYXQiOiIyMDIzLTEwLTAyVDA1OjMwOjQxLjk3ODY1NjE1OVoiLCJpZCI6IjhhMzIzMDE4LTVkYWUtMTFlZS04YjVjLTMyNzE3OTI2MDEzYSJ9.cUDuRNAWL21Zf1kT0StQYCuP4FT0JQYaHYr8aCiCV9c-ghzTcvXJVxOoqoNY5HViAFEm7uPLF1N6jJ2YreCvBg"
+	db, err := sql.Open("libsql", dbUrl)
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "Failed to execute SQL query: " + err.Error()})
+		return
+	}
+	defer db.Close()
+
+	stmt, err := db.Prepare("DELETE FROM users WHERE ID = ?")
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Close the prepared statement.
+	defer stmt.Close()
+
+	// Execute the prepared statement to delete the user.
+	result, err := stmt.Exec(id)
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "Failed to execute SQL query: " + err.Error()})
+		return
+	}
+
+	// Check the result to see if the deletion was successful.
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected > 0 {
+		c.IndentedJSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
+	} else {
+		c.IndentedJSON(http.StatusNotFound, gin.H{"error": "User not found"})
+	}
 }
 
 var users = []user{

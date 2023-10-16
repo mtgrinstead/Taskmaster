@@ -26,6 +26,7 @@ func main() {
 	router.GET("/dbtasks", Handling.GetAllTasks)
 	router.POST("/newdbuser", Handling.AddUser)
 	router.POST("/dbtasks", Handling.AddTask)
+	router.DELETE("/deleteuser/:id", Handling.DeleteUser)
 	router.GET("/tasks", Handling.GetTasks)
 	router.GET("/tasks/:id", Handling.TaskById)
 	router.POST("/tasks", Handling.CreateTask)
