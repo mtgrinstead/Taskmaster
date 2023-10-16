@@ -17,17 +17,20 @@ type user struct {
 	Role         int    `json:"role"`
 }
 
+// DATABASE FUNCTIONS
+
 func GetAllUsers(c *gin.Context) {
+	// Returns all users in database
 	var dbUrl = "libsql://taskmaster-mtgrinstead.turso.io?authToken=eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJpYXQiOiIyMDIzLTEwLTAyVDA1OjMwOjQxLjk3ODY1NjE1OVoiLCJpZCI6IjhhMzIzMDE4LTVkYWUtMTFlZS04YjVjLTMyNzE3OTI2MDEzYSJ9.cUDuRNAWL21Zf1kT0StQYCuP4FT0JQYaHYr8aCiCV9c-ghzTcvXJVxOoqoNY5HViAFEm7uPLF1N6jJ2YreCvBg"
 	db, err := sql.Open("libsql", dbUrl)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	query := "SELECT ID, Name, Email, CreatedDate, Role FROM users"
 	rows, err := db.Query(query)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	defer rows.Close()
@@ -37,60 +40,81 @@ func GetAllUsers(c *gin.Context) {
 		var userdb user
 		err := rows.Scan(&userdb.ID, &userdb.Name, &userdb.Email, &userdb.CreatedDate, &userdb.Role)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 
-		//userID_int, err := strconv.Atoi(userdb.ID)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 		users = append(users, userdb)
 	}
 	if err := rows.Err(); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, users)
+	c.IndentedJSON(http.StatusOK, users)
 }
 
-//func CheckMe(c *gin.Context) {
-//
-//	var dbUrl = "libsql://taskmaster-mtgrinstead.turso.io?authToken=eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJpYXQiOiIyMDIzLTEwLTAyVDA1OjMwOjQxLjk3ODY1NjE1OVoiLCJpZCI6IjhhMzIzMDE4LTVkYWUtMTFlZS04YjVjLTMyNzE3OTI2MDEzYSJ9.cUDuRNAWL21Zf1kT0StQYCuP4FT0JQYaHYr8aCiCV9c-ghzTcvXJVxOoqoNY5HViAFEm7uPLF1N6jJ2YreCvBg"
-//	db, err := sql.Open("libsql", dbUrl)
-//	if err != nil {
-//		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-//		return
-//	}
-//
-//	var userdb user
-//
-//	query := "SELECT ID, Name FROM users"
-//
-//	err = db.QueryRow(query, userID).Scan(&userdb.ID, &userdb.Name)
-//
-//	if err != nil {
-//		if errors.Is(err, sql.ErrNoRows) {
-//			c.JSON(http.StatusNotFound, gin.H{"message": "No rows found."})
-//		} else {
-//			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-//		}
-//		return
-//	}
-//
-//	userID_int, err := strconv.Atoi(userdb.ID)
-//	if err != nil {
-//		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-//		return
-//	}
-//
-//	c.JSON(http.StatusOK, gin.H{
-//		"User ID":   userID_int,
-//		"User Name": userdb.Name,
-//	})
-//}
+func GetUserById(c *gin.Context) {}
+
+func AddUser(c *gin.Context) {
+	var newUser user
+	if err := c.ShouldBindJSON(&newUser); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Validate the user name.
+	if newUser.Name == "" {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "User Name must not be empty"})
+		return
+	}
+
+	// Validate the user email.
+	if newUser.Email == "" {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "User Email must not be empty"})
+		return
+	}
+
+	// Validate the user password.
+	for _, password := range newUser.PasswordHash {
+		if password == 0 {
+			c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Password must not be empty"})
+			return
+		}
+	}
+
+	// Create a prepared statement.
+	var dbUrl = "libsql://taskmaster-mtgrinstead.turso.io?authToken=eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJpYXQiOiIyMDIzLTEwLTAyVDA1OjMwOjQxLjk3ODY1NjE1OVoiLCJpZCI6IjhhMzIzMDE4LTVkYWUtMTFlZS04YjVjLTMyNzE3OTI2MDEzYSJ9.cUDuRNAWL21Zf1kT0StQYCuP4FT0JQYaHYr8aCiCV9c-ghzTcvXJVxOoqoNY5HViAFEm7uPLF1N6jJ2YreCvBg"
+	db, err := sql.Open("libsql", dbUrl)
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "Failed to execute SQL query: " + err.Error()})
+		return
+	}
+	defer db.Close()
+
+	stmt, err := db.Prepare("INSERT INTO users (Name, Email, PasswordHash, CreatedDate, Role) VALUES (?, ?, ?, DATE('now'), ?)")
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Bind the user data to the prepared statement parameters.
+	_, err = stmt.Exec(newUser.Name, newUser.Email, newUser.PasswordHash, newUser.Role)
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Close the prepared statement.
+	defer stmt.Close()
+
+	// Return a success message to the user.
+	c.IndentedJSON(http.StatusCreated, gin.H{"message": "User added successfully"})
+}
 
 var users = []user{
 	{ID: "1", Name: "Mom", Email: "momma@yahoo.com", CreatedDate: "Today", PasswordHash: "password", Role: 0},
@@ -99,6 +123,7 @@ var users = []user{
 	{ID: "4", Name: "Baby", Email: "worlddomination@gmail.com", CreatedDate: "July 4", PasswordHash: "P@S5w0rd", Role: 0},
 }
 
+// LOCALHOST FUNCTIONS
 func GetUsers(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, users)
 }

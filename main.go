@@ -3,14 +3,29 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"main/Handling"
+	"net/http"
 )
+
+func enableCors(w *http.ResponseWriter) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+}
 
 func main() {
 	//lambda.Start(handler)
 
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		enableCors(&w)
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.WriteHeader(http.StatusOK)
+		//w.Write([]byte('{"message": "Success"}'))
+	})
+
 	router := gin.Default()
 
 	router.GET("/dbusers", Handling.GetAllUsers)
+	router.GET("/dbtasks", Handling.GetAllTasks)
+	router.POST("/newdbuser", Handling.AddUser)
+	router.POST("/dbtasks", Handling.AddTask)
 	router.GET("/tasks", Handling.GetTasks)
 	router.GET("/tasks/:id", Handling.TaskById)
 	router.POST("/tasks", Handling.CreateTask)
@@ -20,7 +35,7 @@ func main() {
 
 	router.GET("/users", Handling.GetUsers)
 	router.GET("/users/:id", Handling.UserById)
-	router.POST("/users", Handling.CreateUser)
+	router.POST("/newuser", Handling.CreateUser)
 	router.PATCH("/password", Handling.UpdatePassword)
 	router.PATCH("/promote", Handling.PromoteRole)
 	router.PATCH("/demote", Handling.DemoteRole)
